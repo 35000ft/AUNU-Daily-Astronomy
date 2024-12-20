@@ -186,9 +186,9 @@ const onImageLoad = (imgUrl) => {
   setTimeout(() => {
     console.log('loaded', imgUrl)
     loadingMap.value.delete(imgUrl)
-    if (imgUrl === shownImageUrl.value) {
-      convertToBase64()
-    }
+    // if (imgUrl === shownImageUrl.value) {
+    //   convertToBase64()
+    // }
   }, 500)
 };
 const onImageLoading = (imgUrl) => {
