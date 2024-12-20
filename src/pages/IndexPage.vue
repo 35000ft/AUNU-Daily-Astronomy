@@ -5,16 +5,18 @@
 </template>
 
 <script setup>
-//
 import ImageViewer from "components/ImageViwer.vue";
-import {computed, onMounted, ref} from "vue";
+import {computed, getCurrentInstance, onMounted, ref} from "vue";
 import axios from "axios";
 import {isDateGreaterThanToday} from "src/util/time-utils.js";
 
 onMounted(() => {
   init()
 })
-const IMAGE_FILE_PREFIX = 'Daily Astronomy_'
+const instance = getCurrentInstance();
+
+// 访问全局属性
+const config = instance.appContext.config.globalProperties.$config;
 const KNOWN_FILES_KEY = 'known-archive-files'
 const images = computed(() => {
   // sort by date desc
@@ -52,7 +54,7 @@ const addKnownFiles = (urls) => {
   }
 }
 
-const tryFindImages = () => {
+const tryFindImages = async () => {
   const _images = images.value
   if (_images.length === 0) {
     return
@@ -65,16 +67,24 @@ const tryFindImages = () => {
     if (isDateGreaterThanToday(nextDate)) {
       return
     }
-    // const nextDateStr = nextDate.toISOString().substring(0, 10)
-    const nextDateStr = `${(nextDate.getMonth() + 1).toString().padStart(2, '0')}.${nextDate.getDate().toString().padStart(2, '0')}`
+    // const nextDateStr = nextDate.toISOString().substring(0, 10) // pattern: 2024-01-01
+    const nextDateStr = `${(nextDate.getMonth() + 1).toString().padStart(2, '0')}.${nextDate.getDate().toString().padStart(2, '0')}` //  pattern: 12.01
     maxDate = nextDate
-    const url = `https://raw.githubusercontent.com/BI7AQU/AUNU-Daily-Astronomy/refs/heads/main/Archive/${IMAGE_FILE_PREFIX}${nextDateStr}.jpg`
-    axios.get(url).then(res => {
-      let contentType = res.headers.get("content-type");
-      if (contentType.startsWith('image')) {
-        addKnownFiles(url)
+    const IMAGE_FILE_PREFIX = config['imageFilePrefix'] || 'Daily Astronomy_'
+    const IMAGES_SOURCES = config['imageSources'] || ['/']
+    for (let source of IMAGES_SOURCES) {
+      let url = `${source}${IMAGE_FILE_PREFIX}${nextDateStr}.jpg`;
+      try {
+        const res = await axios.get(url, {responseType: 'blob'});
+        let contentType = res.headers['content-type'];
+        if (contentType && contentType.startsWith('image')) {
+          addKnownFiles(url);
+          break;
+        }
+      } catch (error) {
+        console.warn('get image err, url:', url, error)
       }
-    })
+    }
   }
 
 }

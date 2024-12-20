@@ -15,7 +15,7 @@
             v-show="shownImageUrl===img"
             class="image-wrapper"
             :style="imageStyles">
-              <img draggable="false" :src="img" :alt="img" class="image"
+              <img :src="img" :alt="img" class="image"
                    @load="onImageLoad(img)" @error="onloadImgError(img)">
       </span>
 
@@ -47,10 +47,11 @@
 </template>
 
 <script setup>
-import {ref, computed, watch, reactive, defineComponent} from 'vue';
+import {ref, computed, watch, reactive, defineComponent, getCurrentInstance} from 'vue';
 import {QBtn} from 'quasar';
 
 import LRUCache from "src/util/LRU.js";
+
 
 // 接收图片地址数组的props
 const props = defineProps({
@@ -189,18 +190,20 @@ const onImageLoading = (imgUrl) => {
 }
 
 .image-container {
-  width: 100%;
+  width: 95%;
   height: 90%;
   position: relative;
   overflow: hidden;
   display: flex;
+  justify-self: center;
   align-items: center;
   justify-content: center;
 }
 
 .image {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 
@@ -231,6 +234,10 @@ const onImageLoading = (imgUrl) => {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.image-wrapper {
+  height: 100%;
 }
 
 .spinner-container {
