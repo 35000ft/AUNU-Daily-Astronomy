@@ -8,7 +8,6 @@
 import ImageViewer from "components/ImageViwer.vue";
 import {computed, getCurrentInstance, onMounted, ref} from "vue";
 import axios from "axios";
-import {isDateGreaterThanToday} from "src/util/time-utils.js";
 
 onMounted(() => {
   init()
@@ -36,15 +35,17 @@ const init = () => {
   if (_knownArchiveFiles instanceof Array) {
     _knownArchiveFiles.forEach(it => knownArchiveFiles.value.add(it))
   }
-  axios.get('known-archive-files.json').then(res => {
+  axios.get('/configs/known-archive-files.json').then(res => {
     const _knownArchiveFiles = res.data.map(it => 'archive/' + it)
     addKnownFiles(_knownArchiveFiles)
   })
+  console.log('try find')
   setTimeout(() => {
     tryFindImages()
   }, 1000)
 }
 const addKnownFiles = (urls) => {
+  console.log('add known files', urls)
   if (urls instanceof Array) {
     urls.forEach(it => knownArchiveFiles.value.add(it))
     localStorage.setItem(KNOWN_FILES_KEY, JSON.stringify(Array.from(knownArchiveFiles.value.values())))
@@ -55,34 +56,38 @@ const addKnownFiles = (urls) => {
 }
 
 const tryFindImages = async () => {
-  const _images = images.value
-  if (_images.length === 0) {
-    return
-  }
-  console.log('try find')
-  // get date Daily Astronomy_2024-12-05.jpg->2024-12-05
-  let maxDate = new Date(_images[0].split('_')[1].substring(0, 10))
-  while (true) {
-    const nextDate = new Date(maxDate.setDate(maxDate.getDate() + 1))
-    if (isDateGreaterThanToday(nextDate)) {
-      return
+  let fromDate = new Date(config['fromDate'])
+  let currentDate = new Date();  // Start from today
+  while (currentDate >= fromDate) {
+    // Decrement the date by 1 day
+    const nextDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
+    currentDate = nextDate
+    // Format the date in the desired format (MM.DD)
+    const nextDateStr = `${(nextDate.getMonth() + 1).toString().padStart(2, '0')}.${nextDate.getDate().toString().padStart(2, '0')}`;
+    const has = images.value.findIndex(it => it.includes(nextDateStr)) !== -1
+    if (has) {
+      continue
     }
-    // const nextDateStr = nextDate.toISOString().substring(0, 10) // pattern: 2024-01-01
-    const nextDateStr = `${(nextDate.getMonth() + 1).toString().padStart(2, '0')}.${nextDate.getDate().toString().padStart(2, '0')}` //  pattern: 12.01
-    maxDate = nextDate
-    const IMAGE_FILE_PREFIX = config['imageFilePrefix'] || 'Daily Astronomy_'
-    const IMAGES_SOURCES = config['imageSources'] || ['/']
+    console.log(`try to find images, date:${nextDateStr}`)
+    // Set the file prefix and image sources
+    const IMAGE_FILE_PREFIX = config['imageFilePrefix'] || 'Daily Astronomy_';
+    const IMAGES_SOURCES = config['imageSources'] || ['/'];
+
     for (let source of IMAGES_SOURCES) {
       let url = `${source}${IMAGE_FILE_PREFIX}${nextDateStr}.jpg`;
       try {
-        const res = await axios.get(url, {responseType: 'blob'});
-        let contentType = res.headers['content-type'];
-        if (contentType && contentType.startsWith('image')) {
+        // const res = await axios.get(url);
+        const res = await axios.head(url);
+        let contentType = res.headers['content-type']
+        if (!contentType) {
+          continue
+        }
+        if (contentType.startsWith('image') || contentType === 'application/octet-stream') {
           addKnownFiles(url);
           break;
         }
       } catch (error) {
-        console.warn('get image err, url:', url, error)
+        console.warn('get image err, url:', url, error);
       }
     }
   }

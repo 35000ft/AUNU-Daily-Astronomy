@@ -1,0 +1,8 @@
+{
+  "imageSources": [
+    "/",
+    "https://raw.githubusercontent.com/BI7AQU/AUNU-Daily-Astronomy/refs/heads/main/Archive/"
+  ],
+  "imageFilePrefix": "Daily Astronomy_",
+  "fromDate": "2024-11-29"
+}

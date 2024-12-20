@@ -15,7 +15,7 @@
             v-show="shownImageUrl===img"
             class="image-wrapper"
             :style="imageStyles">
-              <img :src="img" :alt="img" class="image"
+              <img :src="img" :alt="img" class="image" ref="imagesRef" crossorigin="anonymous"
                    @load="onImageLoad(img)" @error="onloadImgError(img)">
       </span>
 
@@ -64,16 +64,30 @@ const props = defineProps({
     default: null
   },
 });
+const imagesRef = ref(null)
 
-const handleSwipe = (event) => {
-  if (event.direction === 'left') {
-    prevPage()
-    // 执行左滑操作
-  } else if (event.direction === 'right') {
-    // 执行右滑操作
-    nextPage()
-  }
-}
+// base64缓存
+// const convertToBase64 = () => {
+//   if (!imagesRef.value) {
+//     return
+//   }
+//   const _encoded = encodeURI(shownImageUrl.value)
+//   const imgElement = imagesRef.value.find(img => img.src === _encoded)
+//   if (imgElement) {
+//     const canvas = document.createElement('canvas');
+//     const ctx = canvas.getContext('2d');
+//
+//     // 设置 canvas 的宽高与 img 元素一致
+//     canvas.width = imgElement.naturalWidth;
+//     canvas.height = imgElement.naturalHeight;
+//
+//     // 将图片绘制到 canvas 上
+//     ctx.drawImage(imgElement, 0, 0);
+//
+//     // 获取 Base64 编码
+//     const base64Image = canvas.toDataURL('image/png');
+//   }
+// }
 
 const cachedImages = ref([])
 const LRUImages = new LRUCache(10)
@@ -172,6 +186,9 @@ const onImageLoad = (imgUrl) => {
   setTimeout(() => {
     console.log('loaded', imgUrl)
     loadingMap.value.delete(imgUrl)
+    if (imgUrl === shownImageUrl.value) {
+      convertToBase64()
+    }
   }, 500)
 };
 const onImageLoading = (imgUrl) => {
