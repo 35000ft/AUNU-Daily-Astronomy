@@ -12,7 +12,6 @@ export default defineConfig((/* ctx */) => {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
-      'axios',
       'v-viewer',
       'load-config'
     ],
@@ -40,7 +39,10 @@ export default defineConfig((/* ctx */) => {
     build: {
       target: {
         browser: ['es2022', 'firefox115', 'chrome115', 'safari14'],
-        node: 'node20'
+        node: 'node20',
+      },
+      env: {
+        PUBLIC_URL: "/AUNU-Daily-Astronomy",
       },
       publicPath: '/AUNU-Daily-Astronomy/',
 

@@ -29,7 +29,7 @@ yarn-error.log*
 *.njsproj
 *.sln
 
-# local .env files
+# local process.env files
 .env.local*
 
 public/archive

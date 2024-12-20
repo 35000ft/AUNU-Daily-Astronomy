@@ -1,6 +1,6 @@
 // src/boot/load-config.js
 import {boot} from "quasar/wrappers";
-import axios from "axios";
+import axios from "src/util/axios.js";
 
 export default boot(({app}) => {
   axios.get('/configs/config.json').then(res => {
