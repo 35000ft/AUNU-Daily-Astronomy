@@ -83,7 +83,7 @@ const tryFindImages = async () => {
           continue
         }
         if (contentType.startsWith('image') || contentType === 'application/octet-stream') {
-          addKnownFiles(url);
+          addKnownFiles(res.config.url);
           break;
         }
       } catch (error) {

@@ -16,11 +16,12 @@ const axiosInstance = axios.create({
 });
 axiosInstance.interceptors.request.use(
     (config) => {
-      // 检查 URL 是否已经包含 publicPath，避免重复添加
       if (isAbsoluteURL(config.url)) {
         config.baseURL = '';
-      } else if (!config.url.startsWith(publicPath)) {
-        config.url = publicPath + config.url;
+      } else  {
+        if (!config.url.startsWith(publicPath)){
+          config.url = publicPath + config.url;
+        }
       }
       return config;
     },
