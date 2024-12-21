@@ -1,6 +1,11 @@
 import axios from 'axios'
 const publicPath = process.env.PUBLIC_URL || '/';
 console.log('publicPath',publicPath,process.env)
+
+function isAbsoluteURL(url) {
+  return /^(?:[a-z]+:)?\/\//i.test(url);
+}
+
 const axiosInstance = axios.create({
     // baseURL: 'https://your-api-url.com',  // 设置你的 API 基础 URL
     timeout: 10000,                      // 设置请求超时
@@ -12,7 +17,9 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     (config) => {
       // 检查 URL 是否已经包含 publicPath，避免重复添加
-      if (!config.url.startsWith(publicPath)) {
+      if (isAbsoluteURL(config.url)) {
+        config.baseURL = '';
+      } else if (!config.url.startsWith(publicPath)) {
         config.url = publicPath + config.url;
       }
       return config;

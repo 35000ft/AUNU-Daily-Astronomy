@@ -7,7 +7,7 @@
 <script setup>
 import ImageViewer from "components/ImageViwer.vue";
 import {computed, getCurrentInstance, onMounted, ref} from "vue";
-import axios from "axios";
+import axios from "src/util/axios.js";
 
 onMounted(() => {
   init()
